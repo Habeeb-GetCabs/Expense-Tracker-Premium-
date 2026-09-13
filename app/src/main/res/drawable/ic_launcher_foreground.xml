@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Wallet Body -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M24,32 C24,28.686 26.686,26 30,26 L78,26 C81.314,26 84,28.686 84,32 L84,76 C84,79.314 81.314,82 78,82 L30,82 C26.686,82 24,79.314 24,76 Z" />
+    <!-- Wallet Flap & Card Slot -->
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M24,40 L84,40 L84,48 L24,48 Z" />
+    <!-- Wallet Clasp / Badge -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M64,50 C64,46.686 66.686,44 70,44 L84,44 L84,62 L70,62 C66.686,62 64,59.314 64,56 Z" />
+    <!-- Clasp Circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,53 A3,3 0 1,0 74,53.01 Z" />
+    <!-- Upward Trend / Dollar Symbol Accent -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M34,64 L46,52 L54,60 L68,46 L68,54 L72,54 L72,40 L58,40 L58,44 L65.2,44 L54,55.2 L46,47.2 L31.2,62 Z" />
+</vector>
