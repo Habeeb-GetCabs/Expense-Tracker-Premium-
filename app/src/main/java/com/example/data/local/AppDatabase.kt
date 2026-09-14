@@ -33,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "expense_tracker_db"
                 )
                     .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance
                 instance
