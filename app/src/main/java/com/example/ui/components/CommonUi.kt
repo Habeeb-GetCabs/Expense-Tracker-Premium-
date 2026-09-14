@@ -38,13 +38,23 @@ import java.util.Date
 import java.util.Locale
 
 fun formatCurrency(amount: Double): String {
-    val format = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-    return format.format(amount).replace("INR", "₹")
+    if (amount.isNaN() || amount.isInfinite()) return "₹0.00"
+    return try {
+        val format = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
+        format.format(amount).replace("INR", "₹")
+    } catch (e: Exception) {
+        String.format(Locale.US, "₹%,.2f", amount)
+    }
 }
 
 fun formatDate(timestampMs: Long): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
-    return sdf.format(Date(timestampMs))
+    if (timestampMs <= 0) return ""
+    return try {
+        val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.US)
+        sdf.format(Date(timestampMs))
+    } catch (e: Exception) {
+        ""
+    }
 }
 
 fun getCategoryColor(categoryName: String): Color {

@@ -191,19 +191,22 @@ fun CategoryDonutChartCard(
 
                         var startAngle = -90f
                         categorySpending.forEach { (cat, amount) ->
-                            val sweepAngle = ((amount / totalExpense) * 360f).toFloat() * animProgress
+                            val ratio = if (totalExpense > 0) (amount / totalExpense) else 0.0
+                            val sweepAngle = (ratio * 360.0).coerceIn(0.0, 360.0).toFloat() * animProgress
                             val color = getCategoryColor(cat)
 
-                            drawArc(
-                                color = color,
-                                startAngle = startAngle,
-                                sweepAngle = sweepAngle,
-                                useCenter = false,
-                                topLeft = topLeft,
-                                size = arcSize,
-                                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
-                            )
-                            startAngle += sweepAngle
+                            if (sweepAngle > 0f) {
+                                drawArc(
+                                    color = color,
+                                    startAngle = startAngle,
+                                    sweepAngle = sweepAngle,
+                                    useCenter = false,
+                                    topLeft = topLeft,
+                                    size = arcSize,
+                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+                                )
+                                startAngle += sweepAngle
+                            }
                         }
                     }
 
@@ -273,15 +276,22 @@ fun CategoryDonutChartCard(
 
 @Composable
 fun IncomeVSExpenseRatioCard(income: Double, expense: Double) {
-    val total = (income + expense).coerceAtLeast(1.0)
-    val incomeRatio = (income / total).toFloat()
-    val expenseRatio = (expense / total).toFloat()
+    val safeIncome = if (income.isNaN() || income < 0) 0.0 else income
+    val safeExpense = if (expense.isNaN() || expense < 0) 0.0 else expense
+    val sum = safeIncome + safeExpense
+    val total = if (sum <= 0) 1.0 else sum
+
+    val rawIncomeRatio = (safeIncome / total).toFloat()
+    val rawExpenseRatio = (safeExpense / total).toFloat()
+
+    val incomeRatio = if (rawIncomeRatio.isNaN() || rawIncomeRatio < 0f) 0f else rawIncomeRatio.coerceAtMost(1f)
+    val expenseRatio = if (rawExpenseRatio.isNaN() || rawExpenseRatio < 0f) 0f else rawExpenseRatio.coerceAtMost(1f)
 
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().testTag("income_vs_expense_card")
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -291,28 +301,30 @@ fun IncomeVSExpenseRatioCard(income: Double, expense: Double) {
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(16.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                if (incomeRatio > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .weight(incomeRatio)
-                            .fillMaxSize()
-                            .background(Color(0xFF10B981))
-                    )
-                }
-                if (expenseRatio > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .weight(expenseRatio)
-                            .fillMaxSize()
-                            .background(Color(0xFFEF4444))
-                    )
+                Row(modifier = Modifier.fillMaxSize()) {
+                    if (incomeRatio > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .weight(incomeRatio.coerceAtLeast(0.001f))
+                                .fillMaxSize()
+                                .background(Color(0xFF10B981))
+                        )
+                    }
+                    if (expenseRatio > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .weight(expenseRatio.coerceAtLeast(0.001f))
+                                .fillMaxSize()
+                                .background(Color(0xFFEF4444))
+                        )
+                    }
                 }
             }
 
@@ -325,12 +337,12 @@ fun IncomeVSExpenseRatioCard(income: Double, expense: Double) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color(0xFF10B981)))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Income: ${formatCurrency(income)}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Text(text = "Income: ${formatCurrency(safeIncome)}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color(0xFFEF4444)))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Expense: ${formatCurrency(expense)}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Text(text = "Expense: ${formatCurrency(safeExpense)}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -343,8 +355,9 @@ fun BudgetHealthRow(
     spent: Double
 ) {
     val limit = budget.monthlyLimit
-    val isOver = spent > limit
-    val isNear = (spent / limit) >= 0.85f && !isOver
+    val isOver = spent > limit && limit > 0
+    val ratio = if (limit > 0) (spent / limit) else 0.0
+    val isNear = ratio >= 0.85 && !isOver
 
     Card(
         shape = RoundedCornerShape(16.dp),
