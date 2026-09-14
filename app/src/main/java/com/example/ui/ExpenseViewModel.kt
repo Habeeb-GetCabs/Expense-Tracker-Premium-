@@ -230,9 +230,19 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
     }
 }
 
-class ExpenseViewModelFactory(private val repository: ExpenseRepository) : ViewModelProvider.Factory {
+class ExpenseViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExpenseViewModel::class.java)) {
+            val app = context.applicationContext as? com.example.ExpenseApplication
+            val repository = app?.repository ?: run {
+                val db = com.example.data.local.AppDatabase.getDatabase(context.applicationContext)
+                com.example.repository.ExpenseRepository(
+                    transactionDao = db.transactionDao(),
+                    pendingTransactionDao = db.pendingTransactionDao(),
+                    categoryBudgetDao = db.categoryBudgetDao(),
+                    paymentReminderDao = db.paymentReminderDao()
+                )
+            }
             @Suppress("UNCHECKED_CAST")
             return ExpenseViewModel(repository) as T
         }

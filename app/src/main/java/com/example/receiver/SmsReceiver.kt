@@ -41,7 +41,16 @@ class SmsReceiver : BroadcastReceiver() {
                 )
 
                 val pendingResult = goAsync()
-                val repository = (context.applicationContext as ExpenseApplication).repository
+                val app = context.applicationContext as? ExpenseApplication
+                val repository = app?.repository ?: run {
+                    val db = com.example.data.local.AppDatabase.getDatabase(context.applicationContext)
+                    com.example.repository.ExpenseRepository(
+                        transactionDao = db.transactionDao(),
+                        pendingTransactionDao = db.pendingTransactionDao(),
+                        categoryBudgetDao = db.categoryBudgetDao(),
+                        paymentReminderDao = db.paymentReminderDao()
+                    )
+                }
 
                 CoroutineScope(Dispatchers.IO).launch {
                     try {

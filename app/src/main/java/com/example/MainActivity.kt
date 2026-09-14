@@ -95,7 +95,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private val viewModel: ExpenseViewModel by viewModels {
-        ExpenseViewModelFactory((application as ExpenseApplication).repository)
+        ExpenseViewModelFactory(applicationContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
