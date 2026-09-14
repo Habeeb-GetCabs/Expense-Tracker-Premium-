@@ -73,7 +73,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -191,230 +190,225 @@ fun ExpenseAppMainScreen(viewModel: ExpenseViewModel) {
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
+                        .padding(16.dp)
                 ) {
-                    Column {
-                        // Drawer Header Card
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            Color(0xFF1E1B4B),
-                                            Color(0xFF312E81),
-                                            Color(0xFF4338CA)
-                                        )
+                    // Drawer Header Card
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFF1E1B4B),
+                                        Color(0xFF312E81),
+                                        Color(0xFF4338CA)
                                     )
                                 )
-                                .padding(20.dp)
-                        ) {
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(44.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.White.copy(alpha = 0.2f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.AccountBalanceWallet,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            text = "Expense Tracker",
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 18.sp
-                                        )
-                                        Text(
-                                            text = "v2.0 • Pro Edition",
-                                            color = Color(0xFFC7D2FE),
-                                            fontSize = 12.sp
-                                        )
-                                    }
+                            )
+                            .padding(20.dp)
+                    ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountBalanceWallet,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Text(
-                                    text = "Automated Bank SMS Parsing & Smart Budget Management",
-                                    color = Color(0xFFE0E7FF),
-                                    fontSize = 12.sp,
-                                    lineHeight = 16.sp
-                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Expense Tracker",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp
+                                    )
+                                    Text(
+                                        text = "v2.0 • Pro Edition",
+                                        color = Color(0xFFC7D2FE),
+                                        fontSize = 12.sp
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "Automated Bank SMS Parsing & Smart Budget Management",
+                                color = Color(0xFFE0E7FF),
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp
+                            )
                         }
+                    }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                        Text(
-                            text = "NAVIGATION",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                        )
+                    Text(
+                        text = "NAVIGATION",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
 
-                        // Nav Items
-                        Screen.bottomNavItems.forEach { screen ->
-                            val selected = currentRoute == screen.route
-                            NavigationDrawerItem(
-                                icon = {
-                                    if (screen == Screen.PendingSms && pendingTransactions.isNotEmpty()) {
-                                        BadgedBox(
-                                            badge = {
-                                                Badge { Text(pendingTransactions.size.toString()) }
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                                                contentDescription = screen.title
-                                            )
+                    // Nav Items
+                    Screen.bottomNavItems.forEach { screen ->
+                        val selected = currentRoute == screen.route
+                        NavigationDrawerItem(
+                            icon = {
+                                if (screen == Screen.PendingSms && pendingTransactions.isNotEmpty()) {
+                                    BadgedBox(
+                                        badge = {
+                                            Badge { Text(pendingTransactions.size.toString()) }
                                         }
-                                    } else {
+                                    ) {
                                         Icon(
                                             imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
                                             contentDescription = screen.title
                                         )
                                     }
-                                },
-                                label = { Text(screen.title, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium) },
-                                selected = selected,
-                                onClick = {
-                                    scope.launch { drawerState.close() }
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = false
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = false
-                                    }
-                                },
-                                colors = NavigationDrawerItemDefaults.colors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ),
-                                shape = RoundedCornerShape(14.dp),
-                                modifier = Modifier
-                                    .padding(vertical = 2.dp)
-                                    .testTag("drawer_item_${screen.route}")
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "QUICK ACTIONS",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                        )
-
-                        NavigationDrawerItem(
-                            icon = { Icon(imageVector = Icons.Default.QrCodeScanner, contentDescription = null) },
-                            label = { Text("Scan Bank SMS Inbox") },
-                            selected = false,
-                            onClick = {
-                                scope.launch { drawerState.close() }
-                                checkAndRequestSmsPermissions {
-                                    viewModel.scanInboxSms(context) { count ->
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar("Inbox scan complete: Parsed $count transactions!")
-                                        }
-                                    }
+                                } else {
+                                    Icon(
+                                        imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
+                                        contentDescription = screen.title
+                                    )
                                 }
                             },
+                            label = { Text(screen.title, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium) },
+                            selected = selected,
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                navController.navigate(screen.route) {
+                                    popUpTo(Screen.Dashboard.route) {
+                                        saveState = false
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = false
+                                }
+                            },
+                            colors = NavigationDrawerItemDefaults.colors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
                             shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier.padding(vertical = 2.dp)
+                            modifier = Modifier
+                                .padding(vertical = 2.dp)
+                                .testTag("drawer_item_${screen.route}")
                         )
                     }
 
-                    // Developer Credit Card Footer
-                    Column {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Card(
-                            shape = RoundedCornerShape(18.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("developer_credit_card")
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.Start
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(28.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primary),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Code,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(16.dp)
-                                        )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "QUICK ACTIONS",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+
+                    NavigationDrawerItem(
+                        icon = { Icon(imageVector = Icons.Default.QrCodeScanner, contentDescription = null) },
+                        label = { Text("Scan Bank SMS Inbox") },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            checkAndRequestSmsPermissions {
+                                viewModel.scanInboxSms(context) { count ->
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Inbox scan complete: Parsed $count transactions!")
                                     }
-                                    Text(
-                                        text = "Developed by Basheer",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
                                 }
+                            }
+                        },
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
 
-                                Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    // Developer Credit Card Footer
+                    Card(
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("developer_credit_card")
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Copyright,
+                                        imageVector = Icons.Default.Code,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Text(
-                                        text = "2026 Basheer. All Rights Reserved.",
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontWeight = FontWeight.Medium
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
-
-                                Spacer(modifier = Modifier.height(4.dp))
-
                                 Text(
-                                    text = "Built with Kotlin & Jetpack Compose",
-                                    fontSize = 10.sp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = "Developed by Basheer",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Copyright,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "2026 Basheer. All Rights Reserved.",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "Built with Kotlin & Jetpack Compose",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -485,7 +479,7 @@ fun ExpenseAppMainScreen(viewModel: ExpenseViewModel) {
                             selected = isSelected,
                             onClick = {
                                 navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
+                                    popUpTo(Screen.Dashboard.route) {
                                         saveState = false
                                     }
                                     launchSingleTop = true
