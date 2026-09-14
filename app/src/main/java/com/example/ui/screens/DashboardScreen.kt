@@ -327,7 +327,7 @@ fun UpcomingRemindersAlertBanner(
     onViewAllReminders: () -> Unit,
     onMarkPaid: (PaymentReminder) -> Unit
 ) {
-    val topReminder = reminders.first()
+    val topReminder = reminders.firstOrNull() ?: return
     val calNow = Calendar.getInstance()
     val diffDays = topReminder.dueDayOfMonth - calNow.get(Calendar.DAY_OF_MONTH)
 

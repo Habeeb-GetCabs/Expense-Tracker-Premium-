@@ -24,11 +24,11 @@ class ExpenseApplication : Application() {
             paymentReminderDao = database.paymentReminderDao()
         )
 
-        // Populate initial data asynchronously if empty
+        // Populate initial budget categories asynchronously if database is brand new
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val currentTransactions = repository.allTransactions.first()
-                if (currentTransactions.isEmpty()) {
+                val currentBudgets = repository.allCategoryBudgets.first()
+                if (currentBudgets.isEmpty()) {
                     repository.populateDefaultCategoriesAndSampleData()
                 }
             } catch (e: Exception) {
