@@ -14,6 +14,9 @@ interface CategoryBudgetDao {
     @Query("SELECT * FROM category_budgets")
     fun getAllBudgets(): Flow<List<CategoryBudget>>
 
+    @Query("SELECT COUNT(*) FROM category_budgets")
+    suspend fun getBudgetCount(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: CategoryBudget)
 

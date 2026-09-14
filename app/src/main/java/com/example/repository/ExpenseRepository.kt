@@ -137,6 +137,16 @@ class ExpenseRepository(
     /**
      * Populates default categories and sample reminders (with completely EMPTY transactions as requested)
      */
+    suspend fun populateDefaultCategoriesAndSampleDataIfNeeded() {
+        try {
+            if (categoryBudgetDao.getBudgetCount() == 0) {
+                populateDefaultCategoriesAndSampleData()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     suspend fun populateDefaultCategoriesAndSampleData() {
         // Default categories & budgets
         val defaultBudgets = listOf(

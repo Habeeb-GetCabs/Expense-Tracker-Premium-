@@ -40,10 +40,7 @@ class ExpenseApplication : Application() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val currentBudgets = repo.allCategoryBudgets.first()
-                if (currentBudgets.isEmpty()) {
-                    repo.populateDefaultCategoriesAndSampleData()
-                }
+                repo.populateDefaultCategoriesAndSampleDataIfNeeded()
             } catch (e: Exception) {
                 Log.e("ExpenseApplication", "Error seeding default budget categories", e)
             }
