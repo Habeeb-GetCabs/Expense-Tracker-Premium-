@@ -2,29 +2,35 @@ package com.example.repository
 
 import android.content.Context
 import android.net.Uri
-import android.provider.Telephony
 import com.example.data.local.CategoryBudgetDao
+import com.example.data.local.PaymentReminderDao
 import com.example.data.local.PendingTransactionDao
 import com.example.data.local.TransactionDao
 import com.example.data.model.CategoryBudget
+import com.example.data.model.PaymentReminder
 import com.example.data.model.PendingTransaction
 import com.example.data.model.Transaction
 import com.example.parser.SmsParser
 import kotlinx.coroutines.flow.Flow
-import java.util.Calendar
 
 class ExpenseRepository(
     private val transactionDao: TransactionDao,
     private val pendingTransactionDao: PendingTransactionDao,
-    private val categoryBudgetDao: CategoryBudgetDao
+    private val categoryBudgetDao: CategoryBudgetDao,
+    private val paymentReminderDao: PaymentReminderDao
 ) {
 
     val allTransactions: Flow<List<Transaction>> = transactionDao.getAllTransactions()
     val allPendingTransactions: Flow<List<PendingTransaction>> = pendingTransactionDao.getAllPending()
     val allCategoryBudgets: Flow<List<CategoryBudget>> = categoryBudgetDao.getAllBudgets()
+    val allPaymentReminders: Flow<List<PaymentReminder>> = paymentReminderDao.getAllReminders()
 
     suspend fun insertTransaction(transaction: Transaction): Long {
         return transactionDao.insertTransaction(transaction)
+    }
+
+    suspend fun updateTransaction(transaction: Transaction) {
+        transactionDao.updateTransaction(transaction)
     }
 
     suspend fun insertTransactions(transactions: List<Transaction>) {
@@ -62,6 +68,24 @@ class ExpenseRepository(
 
     suspend fun deleteCategoryBudget(categoryName: String) {
         categoryBudgetDao.deleteBudgetByName(categoryName)
+    }
+
+    // Payment Reminders (EMI / Bills / Income)
+    suspend fun insertPaymentReminder(reminder: PaymentReminder): Long {
+        return paymentReminderDao.insertReminder(reminder)
+    }
+
+    suspend fun updatePaymentReminder(reminder: PaymentReminder) {
+        paymentReminderDao.updateReminder(reminder)
+    }
+
+    suspend fun deletePaymentReminder(reminder: PaymentReminder) {
+        paymentReminderDao.deleteReminder(reminder)
+    }
+
+    suspend fun clearAllTransactions() {
+        transactionDao.deleteAllTransactions()
+        pendingTransactionDao.deleteAllPending()
     }
 
     /**
@@ -111,7 +135,7 @@ class ExpenseRepository(
     }
 
     /**
-     * Populates initial default category budgets and realistic sample transactions
+     * Populates default categories and sample reminders (with completely EMPTY transactions as requested)
      */
     suspend fun populateDefaultCategoriesAndSampleData() {
         // Default categories & budgets
@@ -129,106 +153,18 @@ class ExpenseRepository(
         )
         categoryBudgetDao.insertBudgets(defaultBudgets)
 
-        val cal = Calendar.getInstance()
-
-        // Current month sample transactions
-        val sampleTransactions = listOf(
-            Transaction(
-                amount = 75000.0,
-                type = "INCOME",
-                category = "Salary",
-                date = cal.timeInMillis - (1 * 86400000L),
-                merchantOrNote = "TechCorp Monthly Payroll",
-                isAutoParsed = true,
-                smsSender = "AD-HDFCBK"
-            ),
-            Transaction(
-                amount = 3450.0,
-                type = "EXPENSE",
-                category = "Grocery",
-                date = cal.timeInMillis - (2 * 86400000L),
-                merchantOrNote = "Blinkit Supermarket",
-                isAutoParsed = true,
-                smsSender = "VM-BLINKT"
-            ),
-            Transaction(
-                amount = 2100.0,
-                type = "EXPENSE",
-                category = "Medical",
-                date = cal.timeInMillis - (3 * 86400000L),
-                merchantOrNote = "Apollo Pharmacy Store",
-                isAutoParsed = true,
-                smsSender = "AX-APOLLO"
-            ),
-            Transaction(
-                amount = 890.0,
-                type = "EXPENSE",
-                category = "Dining",
-                date = cal.timeInMillis - (4 * 86400000L),
-                merchantOrNote = "Swiggy Gourmet Order",
-                isAutoParsed = true,
-                smsSender = "JK-SWIGGY"
-            ),
-            Transaction(
-                amount = 4500.0,
-                type = "EXPENSE",
-                category = "Shopping",
-                date = cal.timeInMillis - (5 * 86400000L),
-                merchantOrNote = "Amazon Fashion Order",
-                isAutoParsed = false,
-                smsSender = null
-            ),
-            Transaction(
-                amount = 1250.0,
-                type = "EXPENSE",
-                category = "Transport",
-                date = cal.timeInMillis - (6 * 86400000L),
-                merchantOrNote = "HPCL Auto Fuel Station",
-                isAutoParsed = true,
-                smsSender = "BP-HPCL"
-            ),
-            Transaction(
-                amount = 9500.0,
-                type = "EXPENSE",
-                category = "Hospital",
-                date = cal.timeInMillis - (7 * 86400000L),
-                merchantOrNote = "Fortis Health Diagnostic",
-                isAutoParsed = false,
-                smsSender = null
-            ),
-            Transaction(
-                amount = 2300.0,
-                type = "EXPENSE",
-                category = "Utilities",
-                date = cal.timeInMillis - (8 * 86400000L),
-                merchantOrNote = "Electricity Bill Payment",
-                isAutoParsed = true,
-                smsSender = "AD-BESCOM"
-            )
+        // Sample Payment Reminder (e.g. Car Loan EMI)
+        val defaultReminder = PaymentReminder(
+            title = "Car Loan EMI",
+            amount = 15000.0,
+            type = "EXPENSE",
+            category = "Transport",
+            dueDayOfMonth = 10,
+            notifyDaysBefore = 3,
+            notes = "Auto debit from HDFC Bank Account"
         )
-        transactionDao.insertTransactions(sampleTransactions)
+        paymentReminderDao.insertReminder(defaultReminder)
 
-        // Sample pending SMS items for instant pending tab testing
-        val samplePending = listOf(
-            PendingTransaction(
-                rawSms = "Rs 1,499.00 debited from A/C XX4921 at ZEPTO GROCERY on 12-Sep-26. Ref: 492104.",
-                sender = "JM-ZEPTO",
-                extractedAmount = 1499.0,
-                extractedType = "EXPENSE",
-                suggestedCategory = "Grocery",
-                extractedMerchant = "Zepto Grocery",
-                timestamp = System.currentTimeMillis() - 3600000L
-            ),
-            PendingTransaction(
-                rawSms = "Rs 8,500.00 credited to A/C XX4921 from FREELANCE PAYMENT on 11-Sep-26.",
-                sender = "AD-HDFCBK",
-                extractedAmount = 8500.0,
-                extractedType = "INCOME",
-                suggestedCategory = "Salary",
-                extractedMerchant = "Freelance Client",
-                timestamp = System.currentTimeMillis() - 86400000L
-            )
-        )
-        samplePending.forEach { pendingTransactionDao.insertPending(it) }
+        // Note: Transactions and Pending items are intentionally kept completely empty!
     }
 }

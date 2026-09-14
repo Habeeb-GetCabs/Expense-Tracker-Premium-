@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.data.model.CategoryBudget
+import com.example.data.model.PaymentReminder
 import com.example.data.model.PendingTransaction
 import com.example.data.model.Transaction
 import com.example.parser.SmsParser
@@ -33,6 +34,13 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
         )
 
     val categoryBudgets: StateFlow<List<CategoryBudget>> = repository.allCategoryBudgets
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val paymentReminders: StateFlow<List<PaymentReminder>> = repository.allPaymentReminders
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -76,6 +84,12 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
                 isAutoParsed = false
             )
             repository.insertTransaction(transaction)
+        }
+    }
+
+    fun editTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repository.updateTransaction(transaction)
         }
     }
 
@@ -125,6 +139,62 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
         }
     }
 
+    // Payment Reminders & EMI Management
+    fun addPaymentReminder(
+        title: String,
+        amount: Double,
+        type: String = "EXPENSE",
+        category: String = "Utilities",
+        dueDayOfMonth: Int,
+        notifyDaysBefore: Int = 3,
+        notes: String = ""
+    ) {
+        viewModelScope.launch {
+            val reminder = PaymentReminder(
+                title = title.trim(),
+                amount = amount,
+                type = type,
+                category = category,
+                dueDayOfMonth = dueDayOfMonth.coerceIn(1, 31),
+                notifyDaysBefore = notifyDaysBefore.coerceIn(1, 7),
+                notes = notes
+            )
+            repository.insertPaymentReminder(reminder)
+        }
+    }
+
+    fun updatePaymentReminder(reminder: PaymentReminder) {
+        viewModelScope.launch {
+            repository.updatePaymentReminder(reminder)
+        }
+    }
+
+    fun deletePaymentReminder(reminder: PaymentReminder) {
+        viewModelScope.launch {
+            repository.deletePaymentReminder(reminder)
+        }
+    }
+
+    fun markReminderAsPaid(reminder: PaymentReminder) {
+        viewModelScope.launch {
+            val transaction = Transaction(
+                amount = reminder.amount,
+                type = reminder.type,
+                category = reminder.category,
+                merchantOrNote = "${reminder.title} (Bill Paid)",
+                date = System.currentTimeMillis(),
+                isAutoParsed = false
+            )
+            repository.insertTransaction(transaction)
+        }
+    }
+
+    fun clearAllTransactions() {
+        viewModelScope.launch {
+            repository.clearAllTransactions()
+        }
+    }
+
     fun scanInboxSms(context: Context, onResult: (Int) -> Unit) {
         viewModelScope.launch {
             val count = repository.scanInboxSms(context)
@@ -150,14 +220,6 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
             return true
         }
         return false
-    }
-
-    fun resetSampleData() {
-        viewModelScope.launch {
-            repository.deleteAllTransactions()
-            repository.deleteAllPending()
-            repository.populateDefaultCategoriesAndSampleData()
-        }
     }
 
     private fun isCurrentMonth(timeMs: Long): Boolean {

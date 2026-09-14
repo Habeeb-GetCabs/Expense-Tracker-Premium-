@@ -20,7 +20,8 @@ class ExpenseApplication : Application() {
         repository = ExpenseRepository(
             transactionDao = database.transactionDao(),
             pendingTransactionDao = database.pendingTransactionDao(),
-            categoryBudgetDao = database.categoryBudgetDao()
+            categoryBudgetDao = database.categoryBudgetDao(),
+            paymentReminderDao = database.paymentReminderDao()
         )
 
         // Populate initial data asynchronously if empty

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -19,7 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -41,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.data.model.Transaction
 import com.example.ui.components.getCategoryColor
 
@@ -50,6 +47,7 @@ import com.example.ui.components.getCategoryColor
 fun TransactionsScreen(
     transactions: List<Transaction>,
     categories: List<String>,
+    onEditTransaction: (Transaction) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
     onOpenAddDialog: () -> Unit
 ) {
@@ -170,6 +168,7 @@ fun TransactionsScreen(
                     items(filteredList, key = { it.id }) { tx ->
                         TransactionItemRow(
                             transaction = tx,
+                            onEdit = { onEditTransaction(tx) },
                             onDelete = { onDeleteTransaction(tx) }
                         )
                     }

@@ -2,11 +2,13 @@ package com.example.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.MarkEmailUnread
@@ -40,6 +42,13 @@ sealed class Screen(
         unselectedIcon = Icons.Outlined.MarkEmailUnread
     )
 
+    object Reminders : Screen(
+        route = "reminders",
+        title = "Reminders",
+        selectedIcon = Icons.Filled.Alarm,
+        unselectedIcon = Icons.Outlined.Alarm
+    )
+
     object Categories : Screen(
         route = "categories",
         title = "Budgets",
@@ -55,6 +64,6 @@ sealed class Screen(
     )
 
     companion object {
-        val bottomNavItems = listOf(Dashboard, Transactions, PendingSms, Categories, Statistics)
+        val bottomNavItems = listOf(Dashboard, Transactions, PendingSms, Reminders, Categories, Statistics)
     }
 }
