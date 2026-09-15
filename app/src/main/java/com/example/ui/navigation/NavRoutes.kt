@@ -21,42 +21,42 @@ sealed class Screen(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    object Dashboard : Screen(
+    data object Dashboard : Screen(
         route = "dashboard",
         title = "Dashboard",
         selectedIcon = Icons.Filled.AccountBalanceWallet,
         unselectedIcon = Icons.Outlined.AccountBalanceWallet
     )
 
-    object Transactions : Screen(
+    data object Transactions : Screen(
         route = "transactions",
         title = "Ledger",
         selectedIcon = Icons.Filled.ReceiptLong,
         unselectedIcon = Icons.Outlined.ReceiptLong
     )
 
-    object PendingSms : Screen(
+    data object PendingSms : Screen(
         route = "pending_sms",
         title = "SMS Approvals",
         selectedIcon = Icons.Filled.MarkEmailUnread,
         unselectedIcon = Icons.Outlined.MarkEmailUnread
     )
 
-    object Reminders : Screen(
+    data object Reminders : Screen(
         route = "reminders",
         title = "Reminders",
         selectedIcon = Icons.Filled.Alarm,
         unselectedIcon = Icons.Outlined.Alarm
     )
 
-    object Categories : Screen(
+    data object Categories : Screen(
         route = "categories",
         title = "Budgets",
         selectedIcon = Icons.Filled.Category,
         unselectedIcon = Icons.Outlined.Category
     )
 
-    object Statistics : Screen(
+    data object Statistics : Screen(
         route = "statistics",
         title = "Analytics",
         selectedIcon = Icons.Filled.BarChart,
@@ -64,6 +64,7 @@ sealed class Screen(
     )
 
     companion object {
-        val bottomNavItems = listOf(Dashboard, Transactions, PendingSms, Reminders, Categories, Statistics)
+        val bottomNavItems: List<Screen>
+            get() = listOf(Dashboard, Transactions, PendingSms, Reminders, Categories, Statistics)
     }
 }
