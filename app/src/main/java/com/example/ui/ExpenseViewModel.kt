@@ -230,12 +230,12 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
     }
 }
 
-class ExpenseViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class ExpenseViewModelFactory(private val application: android.app.Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExpenseViewModel::class.java)) {
-            val app = context.applicationContext as? com.example.ExpenseApplication
+            val app = application as? com.example.ExpenseApplication
             val repository = app?.repository ?: run {
-                val db = com.example.data.local.AppDatabase.getDatabase(context.applicationContext)
+                val db = com.example.data.local.AppDatabase.getDatabase(application)
                 com.example.repository.ExpenseRepository(
                     transactionDao = db.transactionDao(),
                     pendingTransactionDao = db.pendingTransactionDao(),
